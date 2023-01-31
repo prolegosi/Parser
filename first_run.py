@@ -1,13 +1,8 @@
 import requests
 import pickle
 import sqlite3
-import sklearn
+import pendulum
 import numpy as np
-
-
-def completion():
-    pass
-
 
 con = sqlite3.connect('data.db')
 cur = con.cursor()
@@ -40,39 +35,29 @@ r.close()
 
 counter = 0
 
-
 # Обработка полученных данных и занесение их в базу данных
 for i in data['Time Series FX (Daily)'].items():
-    print(counter)
     d = dict(i[1])
-
     lst = []
-
     for j in d.items():
         lst.append(float(j[1]))
-
-
-
+    # Нормализация
     lst_norm = [(x - min_max_lst[0]) / (min_max_lst[1] - min_max_lst[0]) for x in lst]
 
     days = i[0]
     opening, high, low, closes = tuple(lst_norm)
     close_c = lst[3]
-
     X = np.array(lst_norm).reshape(1, -1)
-
-
+    # Создание предсказания
     predict_after = model.predict(X)
-    print(predict_after)
+
     if counter > 0:
         predict = round(float(predict_before), 2)
     else:
         predict = close_c
 
-
-
-
     try:
+
         cur.execute(f"""INSERT INTO USD_RUB_data VALUES('{days}', {opening}, {high}, {low}, {closes}, {close_c}, {predict}) """)
     except sqlite3.IntegrityError:
         print('дата уже существует')
@@ -80,4 +65,10 @@ for i in data['Time Series FX (Daily)'].items():
     predict_before = predict_after
 
     counter += 1
-cur.execute(f"""INSERT INTO USD_RUB_data VALUES('{days}'{predict}) """)
+
+days = pendulum.tomorrow('Europe/Moscow').format('YYYY-MM-DD')
+cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
+
+print('Данные созданы')
+cur.close()
+
