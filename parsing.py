@@ -13,12 +13,12 @@ con = sqlite3.connect('data.db')
 cur = con.cursor()
 
 cur.execute("""CREATE TABLE IF NOT EXISTS USD_RUB_data(
-        date TEXT PRIMARY KEY,
-        open REAL,
+        days TEXT PRIMARY KEY,
+        opening REAL,
         high REAL,
         low REAL,
-        close REAL
-        close_c REAL
+        closes REAL,
+        close_c REAL,
         predict REAL);
     """)
 
@@ -39,27 +39,45 @@ data = r.json()
 r.close()
 
 counter = 0
+
+
 # Обработка полученных данных и занесение их в базу данных
 for i in data['Time Series FX (Daily)'].items():
+    print(counter)
     d = dict(i[1])
-    date = i[0]
+
     lst = []
 
     for j in d.items():
         lst.append(float(j[1]))
 
+
+
+    lst_norm = [(x - min_max_lst[0]) / (min_max_lst[1] - min_max_lst[0]) for x in lst]
+
+    days = i[0]
+    opening, high, low, closes = tuple(lst_norm)
     close_c = lst[3]
 
-    lst = [(x - min_max_lst[0]) / (min_max_lst[1] - min_max_lst[0]) for x in lst]
-    opening, high, low, close = tuple(lst)
-    """X = np.array(lst).reshape(1, -1)
-    print(X)
+    X = np.array(lst_norm).reshape(1, -1)
+
+
+    predict_after = model.predict(X)
+    print(predict_after)
     if counter > 0:
-        predict = model.predict(X)
-    else
-    print(predict, close_c)"""
+        predict = round(float(predict_before), 2)
+    else:
+        predict = close_c
+
+
+
+
     try:
-        cur.execute(f"""INSERT INTO USD_RUB_data VALUES('{date}',{opening},{high},{low}, {close}, {close_c}) """)
+        cur.execute(f"""INSERT INTO USD_RUB_data VALUES('{days}', {opening}, {high}, {low}, {closes}, {close_c}, {predict}) """)
     except sqlite3.IntegrityError:
         print('дата уже существует')
+
+    predict_before = predict_after
+
     counter += 1
+cur.execute(f"""INSERT INTO USD_RUB_data VALUES('{days}'{predict}) """)
