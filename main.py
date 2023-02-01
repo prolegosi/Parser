@@ -4,12 +4,14 @@ import telebot
 import time
 from settings import TG_TOKEN
 import pendulum
-
+import sqlite3
 bot = telebot.TeleBot(TG_TOKEN)
 
 
 def create_graph():
   days = pendulum.now('Europe/Moscow').format('YYYY-MM-DD')
+  con = sqlite3.connect('data.db')
+  cur = con.cursor()
 
   """url = 'https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=USD&to_symbol=RUB&apikey=W284OCJ6Y1UZJK7P'
   r = requests.get(url)
