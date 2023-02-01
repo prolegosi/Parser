@@ -3,7 +3,7 @@ from backend import keep_alive
 import telebot
 import time
 
-bot = telebot.TeleBot('СЮДА ВСТАВЬТЕ ВАШ ТОКЕН')
+bot = telebot.TeleBot('6004287659:AAE7V5crZGYC6k9EdK7i0QmRE1IEPPLnZIk')
 
 @bot.message_handler(content_types=['text'])
 def get_text_message(message):
