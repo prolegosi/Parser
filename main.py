@@ -45,8 +45,6 @@ def create_graph():
             d = dict(i[1])
             lst = []
             if db_date > now:
-                # написать ретурн
-
                 break
             for j in d.items():
                 lst.append(float(j[1]))

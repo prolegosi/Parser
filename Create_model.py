@@ -84,9 +84,16 @@ min_max = open('files/min_max.txt', 'w+')
 min_max.write(str(data_min_max[0]))
 min_max.write(' ' + str(data_min_max[1]))
 min_max.close()
-
+# нормализуем данные
 sc5 = StandardScaler()
-x5_sc = sc5.fit_transform(x5)
+#x5_sc = sc5.fit_transform(x5)
+
+# нормализую "вручную"
+def normal(x):
+    x = (x - data_min_max[0]) / (data_min_max[1] - data_min_max[0])
+    return x
+x5_sc = x5.apply(normal, axis=1)
+
 x5_train, x5_test, y5_train, y5_test = train_test_split(x5_sc, y5, test_size=0.2)
 
 lin_r_model5 = LinearRegression()
