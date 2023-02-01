@@ -12,7 +12,7 @@ def create_graph():
   days = pendulum.now('Europe/Moscow').format('YYYY-MM-DD')
   con = sqlite3.connect('data.db')
   cur = con.cursor()
-
+  cur.execute(f"SELECT * FROM anime ORDER BY my_rating {days}")
   """url = 'https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=USD&to_symbol=RUB&apikey=W284OCJ6Y1UZJK7P'
   r = requests.get(url)
   data = r.json()
