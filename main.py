@@ -89,26 +89,35 @@ def create_graph():
         cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
 
         # Получаем данные ля графика
-        cur.execute("""SELECT close_c, predict FROM USD_RUB_data ORDER BY days""")
+        cur.execute("""SELECT close_c, predict, days FROM USD_RUB_data ORDER BY days""")
         close_pred = cur.fetchall()
+        days = []
         real = []
         pre = []
         for i in close_pred:
-            real.append(i[0])
+            if i[0] is not None:
+                real.append(i[0])
             pre.append(i[1])
+            days.append(i[2])
+
+
         # строим график и сохраняем.
-        plt.plot(real, label='Real')
-        plt.plot(pre, label='Predict')
+        plt.plot(days[:-1], real, label='real USD/RUB exchange rate')
+        plt.plot(days, pre, label='predicted USD/RUB exchange rate')
         plt.legend()
         plt.grid()
+        plt.xticks(color='w')
+        plt.xlabel('Date')
+        plt.ylabel('Exchange')
+        plt.title('Prediction of dynamics on ' + days[-1])
         plt.savefig('img_pred/predict_show.jpg')
 
-    #con.commit()
+    con.commit()
 
     cur.close()
 
 create_graph()
-"""@bot.message_handler(content_types=['text'])
+@bot.message_handler(content_types=['text'])
 def get_text_message(message):
     bot.send_message(message.from_user.id, "Для получения графика введите - pred")
 
@@ -120,6 +129,6 @@ def get_text_message(message):
 
         bot.send_photo(message.from_user.id, byte)
 
-
+# заглушка для работоспособности на replite
 keep_alive()
-bot.polling(non_stop=True, interval=0)"""
+bot.polling(non_stop=True, interval=0)
