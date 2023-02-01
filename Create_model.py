@@ -168,3 +168,4 @@ axis[1, 1].plot(list(y5_test[:10]))
 axis[1, 1].set_title('Предсказание следующего дня')
 
 plt.savefig('files/predict_show.jpg')
+print('График сохранён в files')

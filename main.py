@@ -8,6 +8,7 @@ import sqlite3
 import requests
 import numpy as np
 import pickle
+import matplotlib as plt
 
 bot = telebot.TeleBot(TG_TOKEN)
 with open('files/USD_RUB_model.pkl', 'rb') as file:
@@ -43,7 +44,6 @@ def create_graph():
             d = dict(i[1])
             lst = []
             if db_date > now:
-                print('чаво?')
                 # написать ретурн
                 break
             for j in d.items():
@@ -52,7 +52,8 @@ def create_graph():
             lst_norm = [(x - min_max_lst[0]) / (min_max_lst[1] - min_max_lst[0]) for x in lst]
 
             days = i[0]
-            if days == now:
+            # если даты нет в базе продолжаем
+            if days == db_date:
                 done = False
             opening, high, low, closes = tuple(lst_norm)
             close_c = lst[3]
@@ -66,28 +67,34 @@ def create_graph():
                 cur.execute(f""" SELECT predict FROM USD_RUB_data WHERE days = '{db_date}'""")
                 pred = cur.fetchall()
                 predict = pred[0][0]
-                print(predict)
 
+            if not done:
+                try:
 
-
-            print(f'{days}, {opening}, {high}, {low}, {closes}, {close_c}, {predict}')
-
-            try:
-                cur.execute(f"""INSERT INTO USD_RUB_data VALUES('{days}', {opening}, {high}, {low}, {closes}, {close_c}, {predict}) """)
-            except sqlite3.IntegrityError:
-                print('дата уже существует')
+                    cur.execute(f"""INSERT INTO USD_RUB_data VALUES('{days}', {opening}, {high}, {low}, {closes}, {close_c}, {predict}) """)
+                except sqlite3.IntegrityError:
+                    print('дата уже существует')
 
             predict_before = predict_after
             if not done:
-                print('ммм???')
+
                 break
             counter += 1
         days = pendulum.tomorrow().format('YYYY-MM-DD')
 
-        #cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
 
+        cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
+
+        # Получаем данные ля графика
+
+
+        # строим график и сохраняем.
+        plt.plot(real)
+        plt.plot(pred)
+        plt.savefig('files/predict_show.jpg')
 
     con.commit()
+
     cur.close()
 
 
