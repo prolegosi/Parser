@@ -66,8 +66,8 @@ for i in data['Time Series FX (Daily)'].items():
 
     counter += 1
 
-days = pendulum.tomorrow().format('YYYY-MM-DD')
-cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
+#days = pendulum.tomorrow().format('YYYY-MM-DD')
+#cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
 
 
 
