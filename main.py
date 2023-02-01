@@ -8,15 +8,16 @@ import sqlite3
 import requests
 import numpy as np
 import pickle
-import matplotlib as plt
+from matplotlib import pyplot as plt
 
 bot = telebot.TeleBot(TG_TOKEN)
 with open('files/USD_RUB_model.pkl', 'rb') as file:
     model = pickle.load(file)
 file.close()
 
+
 def create_graph():
-    now = pendulum.now('Europe/Moscow').format('YYYY-MM-DD')
+    now = pendulum.now().format('YYYY-MM-DD')
 
     con = sqlite3.connect('data.db')
     cur = con.cursor()
@@ -27,13 +28,13 @@ def create_graph():
 
     print(now, db_date)
     if now > db_date:
-    # открываем данные для нормализации
+        # открываем данные для нормализации
         m_m_open = open('files/min_max.txt', 'r')
         val = m_m_open.read()
         m_m_open.close()
         min_max_lst = list(map(float, val.split()))
 
-    # получаем данные с API
+        # получаем данные с API
         url = 'https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=USD&to_symbol=RUB&apikey=W284OCJ6Y1UZJK7P'
         r = requests.get(url)
         data = r.json()
@@ -45,6 +46,7 @@ def create_graph():
             lst = []
             if db_date > now:
                 # написать ретурн
+
                 break
             for j in d.items():
                 lst.append(float(j[1]))
@@ -71,39 +73,53 @@ def create_graph():
             if not done:
                 try:
 
-                    cur.execute(f"""INSERT INTO USD_RUB_data VALUES('{days}', {opening}, {high}, {low}, {closes}, {close_c}, {predict}) """)
+                    cur.execute(
+                        f"""INSERT INTO USD_RUB_data VALUES('{days}', {opening}, {high}, {low}, {closes}, {close_c}, {predict}) """)
                 except sqlite3.IntegrityError:
                     print('дата уже существует')
 
             predict_before = predict_after
+            print(days)
             if not done:
-
                 break
             counter += 1
-        days = pendulum.tomorrow().format('YYYY-MM-DD')
 
+        days = pendulum.tomorrow().format('YYYY-MM-DD')
 
         cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
 
         # Получаем данные ля графика
-
-
+        cur.execute("""SELECT close_c, predict FROM USD_RUB_data ORDER BY days""")
+        close_pred = cur.fetchall()
+        real = []
+        pre = []
+        for i in close_pred:
+            real.append(i[0])
+            pre.append(i[1])
         # строим график и сохраняем.
-        plt.plot(real)
-        plt.plot(pred)
-        plt.savefig('files/predict_show.jpg')
+        plt.plot(real, label='Real')
+        plt.plot(pre, label='Predict')
+        plt.legend()
+        plt.grid()
+        plt.savefig('img_pred/predict_show.jpg')
 
-    con.commit()
+    #con.commit()
 
     cur.close()
 
-
-"""
-@bot.message_handler(content_types=['text'])
-def get_text_message(message):
-  bot.send_message(message.from_user.id,message.text)
-# echo-функция, которая отвечает на любое текстовое сообщение таким же текстом
-
-keep_alive()#запускаем flask-сервер в отдельном потоке. Подробнее ниже...
-bot.polling(non_stop=True, interval=0) #запуск бота"""
 create_graph()
+"""@bot.message_handler(content_types=['text'])
+def get_text_message(message):
+    bot.send_message(message.from_user.id, "Для получения графика введите - pred")
+
+    if message.text == 'pred':
+        create_graph()
+        with open('img_pred/predict_show.jpg', 'rb') as fil:
+            byte = fil.read()
+        print('отправлено')
+
+        bot.send_photo(message.from_user.id, byte)
+
+
+keep_alive()
+bot.polling(non_stop=True, interval=0)"""
