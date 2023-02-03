@@ -107,8 +107,8 @@ def create_graph():
 
         # строим график и сохраняем.
 
-        plt.plot(days[-100:-1], real[-99:], label='real USD/RUB exchange rate')
-        plt.plot(days[-100:], pre[-100:], label='predicted USD/RUB exchange rate')
+        plt.plot(days[-100:-1], real[-99:], label='Real USD/RUB exchange rate')
+        plt.plot(days[-100:], pre[-100:], label=f'Predicted USD/RUB exchange rate\nForecasted closing rate : {pre[-1]}')
         plt.legend()
         plt.grid()
         plt.xticks(color='w')
@@ -116,8 +116,8 @@ def create_graph():
         plt.ylabel('Exchange')
         plt.title('Prediction of dynamics on ' + days[-1])
         plt.savefig('img_pred/predict_show.jpg')
-        # ???предупреждение о разных потоках и глючности матплот либ
-    #con.commit()
+        # ???предупреждение о разных потоках и глючности матплот
+    con.commit()
 
     cur.close()
 
@@ -136,4 +136,4 @@ def get_text_message(message):
 
 # заглушка для работоспособности на replite
 keep_alive()
-bot.polling(non_stop=True, interval=0)
+bot.infinity_polling()
