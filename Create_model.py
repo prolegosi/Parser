@@ -97,9 +97,9 @@ x5_sc = x5.apply(normal, axis=1)
 x5_train, x5_test, y5_train, y5_test = train_test_split(x5_sc, y5, test_size=0.2)
 
 lin_r_model5 = LinearRegression()
-lin_r_model5.fit(x5_train, y5_train)
+lin_r_model5.fit(x5_train.values, y5_train.values)
 
-pred5 = lin_r_model5.predict(x5_test)
+pred5 = lin_r_model5.predict(x5_test.values)
 
 mape = metrics.mean_absolute_percentage_error(y5_test, pred5)
 r2 = metrics.r2_score(y5_test, pred5)

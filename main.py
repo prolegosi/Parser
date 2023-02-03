@@ -1,7 +1,5 @@
-import os
 from backend import keep_alive
 import telebot
-import time
 from settings import TG_TOKEN
 import pendulum
 import sqlite3
@@ -26,8 +24,10 @@ def create_graph():
     row = cur.fetchall()
     db_date = row[0][0]
 
-    print(now, db_date)
-    if now > db_date:
+    print('дата сейчас -', now)
+    print('дата из БД  -', db_date)
+    if now >= db_date:
+        print('Обновление БД')
         # открываем данные для нормализации
         m_m_open = open('files/min_max.txt', 'r')
         val = m_m_open.read()
@@ -76,6 +76,12 @@ def create_graph():
                 except sqlite3.IntegrityError:
                     print('дата уже существует')
 
+            if days == db_date:
+                print('обновляю текщую дату')
+                cur.execute(
+                    f"""UPDATE USD_RUB_data SET opening = {opening}, high = {high}, low = {low},
+                     closes = {closes}, close_c =  {close_c}, predict = {predict} WHERE days ='{days}' """)
+
             predict_before = predict_after
             print(days)
             if not done:
@@ -83,10 +89,10 @@ def create_graph():
             counter += 1
 
         days = pendulum.tomorrow().format('YYYY-MM-DD')
-
+        print('создаю predict на завтра')
         cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
 
-        # Получаем данные ля графика
+        # Получаем данные для графика
         cur.execute("""SELECT close_c, predict, days FROM USD_RUB_data ORDER BY days""")
         close_pred = cur.fetchall()
         days = []
@@ -100,8 +106,9 @@ def create_graph():
 
 
         # строим график и сохраняем.
-        plt.plot(days[:-1], real, label='real USD/RUB exchange rate')
-        plt.plot(days, pre, label='predicted USD/RUB exchange rate')
+
+        plt.plot(days[-100:-1], real[-99:], label='real USD/RUB exchange rate')
+        plt.plot(days[-100:], pre[-100:], label='predicted USD/RUB exchange rate')
         plt.legend()
         plt.grid()
         plt.xticks(color='w')
@@ -109,12 +116,12 @@ def create_graph():
         plt.ylabel('Exchange')
         plt.title('Prediction of dynamics on ' + days[-1])
         plt.savefig('img_pred/predict_show.jpg')
-
-    con.commit()
+        # ???предупреждение о разных потоках и глючности матплот либ
+    #con.commit()
 
     cur.close()
 
-create_graph()
+#create_graph()
 @bot.message_handler(content_types=['text'])
 def get_text_message(message):
     bot.send_message(message.from_user.id, "Для получения графика введите - pred")

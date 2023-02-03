@@ -1,7 +1,6 @@
 import requests
 import pickle
 import sqlite3
-import pendulum
 import numpy as np
 
 con = sqlite3.connect('data.db')
@@ -68,9 +67,6 @@ for i in data['Time Series FX (Daily)'].items():
 
 #days = pendulum.tomorrow().format('YYYY-MM-DD')
 #cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
-
-
-
 
 print('Данные созданы')
 con.commit()
