@@ -15,10 +15,12 @@ file.close()
 
 
 def create_graph():
-    now = pendulum.now().format('YYYY-MM-DD')
+    now = pendulum.now('UTC').format('YYYY-MM-DD')
 
     con = sqlite3.connect('data.db')
+    print(con)
     cur = con.cursor()
+    print(cur)
 
     cur.execute(""" SELECT MAX(days) FROM USD_RUB_data""")
     row = cur.fetchall()
@@ -88,7 +90,7 @@ def create_graph():
                 break
             counter += 1
 
-        days = pendulum.tomorrow().format('YYYY-MM-DD')
+        days = pendulum.tomorrow('UTC').format('YYYY-MM-DD')
         print('создаю predict на завтра')
         cur.execute(f"""INSERT INTO USD_RUB_data (days, predict) VALUES('{days}',{round(float(predict_after), 2)}) """)
 
@@ -117,7 +119,7 @@ def create_graph():
         plt.title('Prediction of dynamics on ' + days[-1])
         plt.savefig('img_pred/predict_show.jpg')
         # ???предупреждение о разных потоках и глючности матплот
-    con.commit()
+    #con.commit()
 
     cur.close()
 
